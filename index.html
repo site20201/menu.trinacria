@@ -13,22 +13,22 @@ header h1 { margin:5px 0; }
 main { padding:10px; display:grid; grid-template-columns:1fr; gap:10px; }
 .category, .dish { background:#fff; padding:10px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; cursor:pointer; transition: all 0.3s ease; position:relative; }
 .category img, .dish img { width:80px; height:80px; object-fit:cover; border-radius:5px; margin-right:10px; }
+#logo { width:120px; height:120px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
 .tooltip { position:absolute; top:5px; right:10px; background:#333; color:#fff; padding:2px 5px; border-radius:3px; font-size:0.75em; display:none; }
 .category:hover .tooltip { display:block; }
 #backBtn { margin-top:10px; padding:5px 10px; background:#333; color:#fff; border:none; border-radius:3px; cursor:pointer; display:none; }
 #topBtn { position:fixed; bottom:20px; right:20px; display:none; background:#333; color:#fff; border:none; padding:10px 15px; border-radius:50px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.3); font-size:0.9em; z-index:1000; }
 footer { text-align:center; padding:15px; background:#eee; margin-top:20px; font-size:0.9em; }
+.flag-img { width:40px; height:40px; object-fit:cover; border-radius:5px; margin:0 5px; cursor:pointer; }
+.langs { display:flex; justify-content:center; align-items:center; margin-bottom:10px; }
 </style>
 </head>
 <body>
 
 <header>
+  <img id="logo" src="" alt="Logo Ristorante">
   <h1 id="restaurantName">Ristorante</h1>
-  <div class="langs">
-    <span data-lang="it">IT</span> |
-    <span data-lang="en">EN</span> |
-    <span data-lang="de">DE</span>
-  </div>
+  <div class="langs" id="langFlags"></div>
 </header>
 
 <main id="content" class="dish-container"></main>
@@ -45,6 +45,8 @@ let menuData={}, currentLang='it', currentCategoryKey=null;
 
 const content=document.getElementById('content');
 const backBtn=document.getElementById('backBtn');
+const logoEl=document.getElementById('logo');
+const langFlagsEl=document.getElementById('langFlags');
 
 // Caricamento automatico del JSON
 fetch('menu_trinacria.json')
@@ -59,16 +61,22 @@ fetch('menu_trinacria.json')
   .catch(err => alert(err.message));
 
 function showLandingPage(){
+  // Logo
+  if(menuData.logo) logoEl.src = menuData.logo;
+
   document.getElementById('restaurantName').textContent = menuData.footer?.name || 'Ristorante';
   document.getElementById('address').textContent = menuData.footer?.address || 'Indirizzo non disponibile';
   document.getElementById('contact').textContent = (menuData.footer?.phone || 'Telefono non disponibile') + ' - ' + (menuData.footer?.email || 'Email non disponibile');
 
-  document.querySelectorAll('.langs span').forEach(el=>{
-    el.addEventListener('click',()=>{
-      currentLang=el.dataset.lang;
-      currentCategoryKey=null;
-      showCategories();
-    });
+  // Bandierine
+  langFlagsEl.innerHTML = '';
+  ['it','en','de'].forEach(lang => {
+    const img = document.createElement('img');
+    img.className='flag-img';
+    img.src = menuData['flag-'+lang] || '';
+    img.dataset.lang = lang;
+    img.addEventListener('click',()=>{ currentLang=lang; currentCategoryKey=null; showCategories(); });
+    langFlagsEl.appendChild(img);
   });
 
   showCategories();
